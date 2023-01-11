@@ -3,10 +3,20 @@ const HttpError = require("../http-errors");
 const Product = db.products;
 const User = db.users;
 const fs = require("fs");
-const path = require('path');
+const path = require("path");
 
 const createProduct = async (req, res, next) => {
-  const { title, category, price, desc, featured } = req.body;
+  const {
+    title,
+    category,
+    subCategory,
+    price,
+    desc,
+    featured,
+    place,
+    condition,
+    madeYear,
+  } = req.body;
   let images = [];
 
   if (req.files) {
@@ -21,9 +31,13 @@ const createProduct = async (req, res, next) => {
     await Product.create({
       title: title,
       category: category,
+      subCategory: subCategory,
       price: price,
       desc: desc,
       featured: featured,
+      condition: condition,
+      place: place,
+      madeYear: madeYear || null,
       images: images.length !== 0 ? images.join(", ") : null,
       userId: req.userId,
     });
@@ -43,32 +57,50 @@ const updateProduct = async (req, res) => {
     });
     if (!product)
       return res.status(404).json({ msg: "A hiretes nem talalhato" });
-    const { title, category, price, desc, deletedImages } = req.body;
+    const {
+      title,
+      category,
+      subCategory,
+      price,
+      desc,
+      deletedImages,
+      place,
+      condition,
+      madeYear,
+    } = req.body;
     //elmentett kepek szelektalasa
     let delImages = deletedImages ? deletedImages.split(", ") : [];
-    let images = product.images.split(', ');
+    let images = product.images ? product.images.split(", ") : [];
 
     for (const el of delImages) {
-        let fImages = images.filter((img) => el !== img);
-        images = [...fImages];
-    }
-    
-    
-    if (req.files) {
-        let files = [...req.files];
-        files.map((file) => {
-        images.push(file.path);
-        });
+      let fImages = images.filter((img) => el !== img);
+      images = [...fImages];
     }
 
-    let filteredImages = images.join(', ');
-    
+    if (req.files) {
+      let files = [...req.files];
+      files.map((file) => {
+        images.push(file.path);
+      });
+    }
+
+    let filteredImages = images.join(", ");
+
     if (req.userId !== product.userId)
       return res.status(403).json({ msg: "Jogosulatlan hozzaferes" });
 
-    
     await Product.update(
-      { title, category, price, desc, images: filteredImages },
+      {
+        title,
+        category,
+        subCategory,
+        price,
+        desc,
+        images: filteredImages,
+        place,
+        condition,
+        madeYear,
+      },
       {
         where: {
           [db.Op.and]: [{ id: product.id }, { userId: req.userId }],
@@ -77,9 +109,9 @@ const updateProduct = async (req, res) => {
     );
 
     for (const imgPath of delImages) {
-        fs.unlink(imgPath, err => {
-            console.log(err);
-        });
+      fs.unlink(imgPath, (err) => {
+        console.log(err);
+      });
     }
 
     res.status(200).json({ msg: "Product updated successfuly" });
@@ -89,37 +121,51 @@ const updateProduct = async (req, res) => {
 };
 
 const getProducts = async (req, res, next) => {
-  console.log("called get products");
-  try {
-    const response = await Product.findAll({
-      attributes: ["uuid", "title", "category", "price", "desc", "images", 'featured'],
-      include: [
-        {
-          model: User,
-          attributes: ["username", "email"],
-        },
-      ],
-      order: [['updatedAt', 'DESC']],
-    });
-    res.status(201).json(response);
-  } catch (error) {
-    res.status(500).json({ msg: error.message });
-  }
-};
-
-const getProductsByUserId = async (req, res, next) => {
-  console.log("called get products");
   try {
     const response = await Product.findAll({
       attributes: [
         "uuid",
         "title",
-        "category", 
-        "userId",
+        "category",
+        "subCategory",
         "price",
         "desc",
         "images",
         "featured",
+        "place",
+        "condition",
+        "madeYear",
+      ],
+      include: [
+        {
+          model: User,
+          attributes: ["name", "email"],
+        },
+      ],
+      order: [["updatedAt", "DESC"]],
+    });
+    res.status(201).json(response);
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json({ msg: error.message });
+  }
+};
+
+const getProductsByUserId = async (req, res, next) => {
+  try {
+    const response = await Product.findAll({
+      attributes: [
+        "uuid",
+        "title",
+        "category",
+        "subCategory",
+        "price",
+        "desc",
+        "images",
+        "featured",
+        "place",
+        "condition",
+        "madeYear",
       ],
       where: {
         userId: req.userId,
@@ -127,13 +173,73 @@ const getProductsByUserId = async (req, res, next) => {
       include: [
         {
           model: User,
-          attributes: ["username", "email"],
+          attributes: ["name", "email"],
         },
       ],
     });
     res.status(200).json(response);
   } catch (error) {
+    console.log(error.message);
     res.status(500).json({ msg: error.message });
+  }
+};
+
+const deleteProductById = async (req, res, next) => {
+  try {
+    const product = await Product.findOne({
+      where: {
+        uuid: req.params.id,
+      },
+    });
+
+    if (!product)
+      return res.status(404).json({ msg: "A hiretes nem talalhato" });
+
+    await Product.destroy({
+      where: {
+        [db.Op.and]: [{ id: product.id }, { userId: req.userId }],
+      },
+    });
+
+    let images = product.images ? product.images.split(", ") : [];
+
+    for (const image of images) {
+      fs.unlink(image, (err) => {
+        console.log(err);
+      });
+    }
+
+    res.status(201).json({ msg: "A hirdetés sikeresen törölve!" });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const getProductById = async (req, res, next) => {
+  try {
+    let product = await Product.findOne({
+      attributes: [
+        "uuid",
+        "title",
+        "category",
+        "subCategory",
+        "price",
+        "desc",
+        "images",
+        "featured",
+        "place",
+        "condition",
+        "madeYear",
+      ],
+      where: { uuid: req.params.id },
+    });
+
+    if (!product)
+      return res.status(404).json({ msg: "A hiretes nem talalhato" });
+
+    res.status(201).json(product);
+  } catch (err) {
+    console.log(err);
   }
 };
 
@@ -142,4 +248,6 @@ module.exports = {
   updateProduct,
   getProducts,
   getProductsByUserId,
+  deleteProductById,
+  getProductById,
 };

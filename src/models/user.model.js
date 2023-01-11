@@ -5,7 +5,7 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: DataTypes.UUIDV4,
       allowNull: false,
     },
-    username: {
+    name: {
       type: DataTypes.STRING,
       allowNull: false,
     },
@@ -20,6 +20,15 @@ module.exports = (sequelize, DataTypes) => {
     token: {
       type: DataTypes.STRING,
       allowNull: true,
+    },
+    telephone: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    activated: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      allowNull: false,
     }
   });
 

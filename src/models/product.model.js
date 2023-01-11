@@ -13,6 +13,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
+    subCategory: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     price: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -32,10 +36,22 @@ module.exports = (sequelize, DataTypes) => {
         notEmpty: true,
       },
     },
-    featured: {
+    featured: { 
       type: DataTypes.BOOLEAN,
       allowNull: false,
     },
+    place: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    condition: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    madeYear: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    }
   });
 
   return Product;

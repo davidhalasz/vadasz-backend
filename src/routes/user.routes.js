@@ -16,6 +16,7 @@ const validateRequest = (req, res, next) => {
   
 
 router.post('/regisztracio', createUserValidator, validateRequest, userController.createUser);
+router.post('/activation/:uuid', userController.activation);
 
 router.post('/belepes', loginUserValidator, validateRequest, userController.loginUser);
 

@@ -1,6 +1,6 @@
 const verifySession = async (req, res, next) => {
     if (!req.session.userId) {
-        return res.status(401).json({ message: "There is no token session" });
+        return res.status(401).json({ sessionMessage: "There is no token session" });
       }
     
       const user = await User.findOne({
@@ -9,7 +9,7 @@ const verifySession = async (req, res, next) => {
         },
       });
     
-      if (!user) return res.status(404).json({ message: "User not found" });
+      if (!user) return res.status(404).json({ sessionMessage: "User not found" });
       req.userId = user.id;
       next();
 }
