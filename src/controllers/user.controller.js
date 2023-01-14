@@ -64,6 +64,35 @@ const createUser = async (req, res, next) => {
   }
 };
 
+const resendEmail = async (req, res, next) => {
+  try {
+    const user = await User.findOne({
+      where: { email: req.body.email },
+    });
+
+    if (!user) return res.status(404).json({ msg: "A felhasznalo nem talalhato" });
+
+    const mailOptions = {
+      from: process.env.EMAIL_TEST,
+      to: user.email,
+      subject: 'Regisztráció megerósítése',
+      text: `Ezt az email azért küldjük, mert regisztráltál a Vadászbörze oldalunkra. A regisztráció megerősítéséhez, kattints az alábbi linkre: http://localhost:3000/activation/${user.uuid}`
+    };
+
+    transporter.sendMail(mailOptions, function(error, info) {
+      if(error) {
+        console.log(error);
+      } else {
+        console.log("Email sent: " + info.response);
+      }
+    });
+
+    } catch (error) {
+      console.log(error);
+      return res.status(400).json({ msg: "Valami hiba történt! Próbáld meg később!" });
+    }
+};
+
 const activation = async (req, res, next) => {
   try {
     console.log(req.params.uuid);
@@ -187,6 +216,7 @@ const deleteUser = async (res, req) => {
 module.exports = {
   createUser,
   loginUser,
+  resendEmail,
   activation,
   checkToken,
   logout,
