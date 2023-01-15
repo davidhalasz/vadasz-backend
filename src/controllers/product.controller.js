@@ -139,7 +139,8 @@ const getProducts = async (req, res, next) => {
       include: [
         {
           model: User,
-          attributes: ["name", "email"],
+          as: 'user',
+          attributes: ["name", "email", "telephone"],
         },
       ],
       order: [["updatedAt", "DESC"]],
@@ -173,10 +174,12 @@ const getProductsByUserId = async (req, res, next) => {
       include: [
         {
           model: User,
-          attributes: ["name", "email"],
+          as: 'user',
+          attributes: ["name", "email", "telephone"],
         },
       ],
     });
+    console.log(response);
     res.status(200).json(response);
   } catch (error) {
     console.log(error.message);
@@ -232,6 +235,13 @@ const getProductById = async (req, res, next) => {
         "madeYear",
       ],
       where: { uuid: req.params.id },
+      include: [
+        {
+          model: User,
+          as: 'user',
+          attributes: ["name", "email", "telephone"],
+        },
+      ],
     });
 
     if (!product)
