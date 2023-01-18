@@ -41,10 +41,9 @@ const createProduct = async (req, res, next) => {
       images: images.length !== 0 ? images.join(", ") : null,
       userId: req.userId,
     });
-    res.status(201).json({ msg: "Hirdetés sikeresen hozzáadva!" });
+    res.status(201).json({ msg: "Termék sikeresen hozzáadva!" });
   } catch (error) {
-    console.log("valami baj van");
-    res.status(500).json({ msg: error.message });
+    res.status(500).json({ msg: "Oops...valami hiba történt! Kérlek, próbáld meg később!" });
   }
 };
 
@@ -56,7 +55,7 @@ const updateProduct = async (req, res) => {
       },
     });
     if (!product)
-      return res.status(404).json({ msg: "A hiretes nem talalhato" });
+      return res.status(404).json({ msg: "A termék nem található" });
     const {
       title,
       category,
@@ -87,7 +86,7 @@ const updateProduct = async (req, res) => {
     let filteredImages = images.join(", ");
 
     if (req.userId !== product.userId)
-      return res.status(403).json({ msg: "Jogosulatlan hozzaferes" });
+      return res.status(403).json({ msg: "Jogosulatlan hozzáférés" });
 
     await Product.update(
       {
@@ -114,9 +113,9 @@ const updateProduct = async (req, res) => {
       });
     }
 
-    res.status(200).json({ msg: "Product updated successfuly" });
+    res.status(200).json({ msg: "A termék sikeresen szerkesztve!" });
   } catch (error) {
-    res.status(500).json({ msg: error.message });
+    res.status(500).json({ msg: "Oops...valami hiba történt! Kérlek, próbáld meg később!" });
   }
 };
 
@@ -148,7 +147,7 @@ const getProducts = async (req, res, next) => {
     res.status(201).json(response);
   } catch (error) {
     console.log(error.message);
-    res.status(500).json({ msg: error.message });
+    res.status(500).json({ msg: "Oops...valami hiba történt! Kérlek, próbáld meg később!" });
   }
 };
 
@@ -183,7 +182,7 @@ const getProductsByUserId = async (req, res, next) => {
     res.status(200).json(response);
   } catch (error) {
     console.log(error.message);
-    res.status(500).json({ msg: error.message });
+    res.status(500).json({ msg: "Oops...valami hiba történt! Kérlek, próbáld meg később!" });
   }
 };
 
@@ -196,7 +195,7 @@ const deleteProductById = async (req, res, next) => {
     });
 
     if (!product)
-      return res.status(404).json({ msg: "A hiretes nem talalhato" });
+      return res.status(404).json({ msg: "A termék nem található" });
 
     await Product.destroy({
       where: {
@@ -212,9 +211,9 @@ const deleteProductById = async (req, res, next) => {
       });
     }
 
-    res.status(201).json({ msg: "A hirdetés sikeresen törölve!" });
+    res.status(201).json({ msg: "A termék sikeresen törölve!" });
   } catch (error) {
-    console.log(error);
+    res.status(500).json({ msg: "Oops...valami hiba történt! Kérlek, próbáld meg később!" });
   }
 };
 
@@ -245,11 +244,11 @@ const getProductById = async (req, res, next) => {
     });
 
     if (!product)
-      return res.status(404).json({ msg: "A hiretes nem talalhato" });
+      return res.status(404).json({ msg: "A termék nem található" });
 
     res.status(201).json(product);
   } catch (err) {
-    console.log(err);
+    res.status(500).json({ msg: "Oops...valami hiba történt! Kérlek, próbáld meg később!" });
   }
 };
 
