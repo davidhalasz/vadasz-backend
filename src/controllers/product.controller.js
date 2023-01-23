@@ -19,15 +19,14 @@ const createProduct = async (req, res, next) => {
   } = req.body;
   let images = [];
 
-  if (req.files) {
-    let files = [...req.files];
-    console.log(files);
-    files.map((file) => {
-      images.push(file.path);
-    });
-  }
-
   try {
+    if (req.files) {
+      let files = [...req.files];
+      files.map((file) => {
+        images.push(file.path);
+      });
+    }
+
     await Product.create({
       title: title,
       category: category,
@@ -41,8 +40,10 @@ const createProduct = async (req, res, next) => {
       images: images.length !== 0 ? images.join(", ") : null,
       userId: req.userId,
     });
+
     res.status(201).json({ msg: "Termék sikeresen hozzáadva!" });
   } catch (error) {
+    console.log(error);
     res.status(500).json({ msg: "Oops...valami hiba történt! Kérlek, próbáld meg később!" });
   }
 };
@@ -66,6 +67,7 @@ const updateProduct = async (req, res) => {
       place,
       condition,
       madeYear,
+      featured,
     } = req.body;
     //elmentett kepek szelektalasa
     let delImages = deletedImages ? deletedImages.split(", ") : [];
@@ -87,7 +89,7 @@ const updateProduct = async (req, res) => {
 
     if (req.userId !== product.userId)
       return res.status(403).json({ msg: "Jogosulatlan hozzáférés" });
-
+    
     await Product.update(
       {
         title,
@@ -98,7 +100,8 @@ const updateProduct = async (req, res) => {
         images: filteredImages,
         place,
         condition,
-        madeYear,
+        madeYear: madeYear || null,
+        featured,
       },
       {
         where: {
