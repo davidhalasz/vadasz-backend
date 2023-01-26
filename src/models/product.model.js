@@ -51,6 +51,11 @@ module.exports = (sequelize, DataTypes) => {
     madeYear: {
       type: DataTypes.INTEGER,
       allowNull: true,
+    },
+    activated: { 
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: true,
     }
   });
 

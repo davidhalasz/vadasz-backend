@@ -137,6 +137,7 @@ const getProducts = async (req, res, next) => {
         "place",
         "condition",
         "madeYear",
+        "activated",
       ],
       include: [
         {
@@ -169,6 +170,7 @@ const getProductsByUserId = async (req, res, next) => {
         "place",
         "condition",
         "madeYear",
+        "activated",
       ],
       where: {
         userId: req.userId,
@@ -235,6 +237,7 @@ const getProductById = async (req, res, next) => {
         "place",
         "condition",
         "madeYear",
+        "activated",
       ],
       where: { uuid: req.params.id },
       include: [
