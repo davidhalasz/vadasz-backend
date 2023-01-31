@@ -5,16 +5,33 @@ const productRouter = require("./src/routes/product.routes");
 const app = express();
 const cors = require("cors");
 const session = require("express-session");
-const SequelizeStore = require('connect-session-sequelize');
-const dbConf = require('./src/models/index');
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
+const mongoose = require("mongoose");
+const MongoStore = require("connect-mongo");
 
 dotenv.config();
 
-const sessionStore = SequelizeStore(session.Store);
-const store = new sessionStore({
-  db: dbConf.sequelize
+mongoose.set('strictQuery', true);
+mongoose.connect(
+  "mongodb+srv://mouse:davee22dodo@cluster0.fkwvjht.mongodb.net/mern?retryWrites=true&w=majority", {useNewUrlParser: true}
+);
+
+const connection = mongoose.connection;
+
+try {
+  connection
+  .once("open", () => {
+    console.log("database connected successfully...");
+  });
+} catch (error) {
+  console.log("connection failed...");
+}
+
+let store = new MongoStore({
+  mongoUrl:
+    "mongodb+srv://mouse:davee22dodo@cluster0.fkwvjht.mongodb.net/mern?retryWrites=true&w=majority",
+  collection: "sessions",
 });
 
 app.use(
@@ -29,21 +46,23 @@ app.use(
   })
 );
 
-app.use(cors({
-  credentials: true,
-  origin:'http://localhost:3000'
-}));
-app.use('/uploads', express.static(path.join('uploads')));
+app.use(
+  cors({
+    credentials: true,
+    origin: "http://localhost:3000",
+  })
+);
+app.use("/uploads", express.static(path.join("uploads")));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/api/user", userRouter);
-app.use('/api', productRouter);
+app.use("/api", productRouter);
 const PORT = process.env.PORT || 4000;
 
 app.use((error, req, res, next) => {
   if (req.file) {
-    fs.unlink(req.file.path, err => {
+    fs.unlink(req.file.path, (err) => {
       console.log(err);
     });
   }
@@ -53,8 +72,6 @@ app.use((error, req, res, next) => {
   res.status(error.code || 500);
   res.json({ message: error.message || "An unknown error occured!" });
 });
- 
-store.sync();
 
 app.listen(PORT, () =>
   console.log(`Example app listening on port ${process.env.PORT}!`)

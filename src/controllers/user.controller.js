@@ -1,10 +1,11 @@
-const db = require("../models");
 const bcrypt = require("bcryptjs");
 const HttpError = require("../http-errors");
 const jwt = require("jsonwebtoken");
-const User = db.users;
-const Product = db.products;
 const nodemailer = require("nodemailer");
+
+const User = require("../models/user");
+const Product = require("../models/product");
+const { default: mongoose } = require("mongoose");
 
 let transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
@@ -33,7 +34,7 @@ const createUser = async (req, res, next) => {
   let isEmailExists;
 
   try {
-    isEmailExists = await User.findOne({ where: { email: email } });
+    isEmailExists = await User.findOne({ email: email });
   } catch (err) {
     return res
       .status(409)
@@ -46,15 +47,15 @@ const createUser = async (req, res, next) => {
 
   const encryptedPassword = await bcrypt.hash(password, 10);
 
-  const newUser = {
+  const newUser = new User({
     name: name,
     email: email.toLowerCase(),
     password: encryptedPassword,
     telephone: telephone,
-  };
+  });
 
   try {
-    const response = await User.create(newUser);
+    const response = await newUser.save();
 
     const mailOptions = {
       from: process.env.EMAIL_TEST,
@@ -62,7 +63,7 @@ const createUser = async (req, res, next) => {
       subject: "Regisztráció megerősítése",
       text: `Ezt az email azért küldjük, mert regisztráltál a Vadászbörze oldalunkra. 
 
-A regisztráció megerősítéséhez, kattints az alábbi linkre: http://localhost:3000/activation/${response.uuid}`,
+A regisztráció megerősítéséhez, kattints az alábbi linkre: http://localhost:3000/activation/${response._id.toString()}`,
     };
 
     transporter.sendMail(mailOptions, function (error, info) {
@@ -73,11 +74,9 @@ A regisztráció megerősítéséhez, kattints az alábbi linkre: http://localho
       }
     });
 
-    return res
-      .status(200)
-      .json({
-        msg: "Sikeres regisztráció! Az aktiváló linket elküldtük az email címedre!",
-      });
+    return res.status(200).json({
+      msg: "Sikeres regisztráció! Az aktiváló linket elküldtük az email címedre!",
+    });
   } catch (err) {
     return res
       .status(400)
@@ -87,9 +86,7 @@ A regisztráció megerősítéséhez, kattints az alábbi linkre: http://localho
 
 const resendEmail = async (req, res, next) => {
   try {
-    const user = await User.findOne({
-      where: { email: req.body.email },
-    });
+    const user = await User.findOne({ email: req.body.email });
 
     if (!user)
       return res.status(404).json({ msg: "A felhasznaló nem található" });
@@ -98,7 +95,7 @@ const resendEmail = async (req, res, next) => {
       from: process.env.EMAIL_TEST,
       to: user.email,
       subject: "Regisztráció megerősítése",
-      text: `Ezt az email azért küldjük, mert regisztráltál a Vadászbörze oldalunkra. A regisztráció megerősítéséhez, kattints az alábbi linkre: http://localhost:3000/activation/${user.uuid}`,
+      text: `Ezt az email azért küldjük, mert regisztráltál a Vadászbörze oldalunkra. A regisztráció megerősítéséhez, kattints az alábbi linkre: http://localhost:3000/activation/${user._id.toString()}`,
     };
 
     transporter.sendMail(mailOptions, function (error, info) {
@@ -118,15 +115,14 @@ const resendEmail = async (req, res, next) => {
 
 const activation = async (req, res, next) => {
   try {
-    console.log(req.params.uuid);
-    const user = await User.findOne({
-      where: { uuid: req.params.uuid },
-    });
+    let objectId = mongoose.Types.ObjectId(req.params.uuid);
+    const user = await User.findById(objectId);
 
     if (!user)
       return res.status(404).json({ msg: "A felhasznaló nem található" });
 
-    await User.update({ activated: true }, { where: { id: user.id } });
+    user.activated = true;
+    await user.save();
     return res.status(200).json({ msg: "Sikeres megerősítés!" });
   } catch (error) {
     console.log(error);
@@ -140,30 +136,28 @@ const loginUser = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    const user = await User.findOne({
-      where: { email: email },
-    });
+    const user = await User.findOne({ email: email });
 
     if (!user)
       return res.status(404).json({ msg: "Helytelen bejelentkezési adatok!" });
 
     if (user.activated === false)
-      return res.status(404).json({ msg: "Az email cím nincs aktiválva! Vedd fel velünk a kapcsolatot!" });
+      return res.status(404).json({
+        msg: "Az email cím nincs aktiválva! Vedd fel velünk a kapcsolatot!",
+      });
 
     if (user && (await bcrypt.compare(password, user.password))) {
-      const token = jwt.sign({ user_id: user.uuid }, process.env.TOKEN_KEY, {
+      const token = jwt.sign({ user_id: user._id }, process.env.TOKEN_KEY, {
         expiresIn: "2h",
       });
 
       user.token = token;
-      await User.update(user, { where: { id: user.id } });
+      await user.save();
       req.session.jwt = token;
 
-      res
-        .status(200)
-        .json({
-          user: { uuid: user.uuid, name: user.name, email: user.email },
-        });
+      res.status(200).json({
+        user: { uuid: user.uuid, name: user.name, email: user.email },
+      });
     } else {
       return res.status(404).json({ msg: "Helytelen bejelentkezési adatok" });
     }
@@ -177,44 +171,41 @@ const loginUser = async (req, res, next) => {
 const resetPassword = async (req, res, next) => {
   try {
     const { email } = req.body;
-
-    const user = await User.findOne({
-      where: { email: email },
-    });
+    const user = await User.findOne({ email: email });
 
     if (!user)
       return res.status(404).json({ msg: "A felhasznaló nem talalható" });
 
-    const password = generateRandomString(7);
-    const encryptedPassword = await bcrypt.hash(password, 10);
+    
+      const password = generateRandomString(7);
+      const encryptedPassword = await bcrypt.hash(password, 10);
 
-    await User.update(
-      { password: encryptedPassword },
-      { where: { id: user.id } }
-    );
+      user.password = encryptedPassword;
+      await user.save();
 
-    const mailOptions = {
-      from: process.env.EMAIL_TEST,
-      to: user.email,
-      subject: "Új jelszó kérése",
-      text: `Ezt az email azért küldjök, mert a vadáazbörze oldalunkon új jelszót igényeltél.
+      const mailOptions = {
+        from: process.env.EMAIL_TEST,
+        to: user.email,
+        subject: "Új jelszó kérése",
+        text: `Ezt az email azért küldjök, mert a vadáazbörze oldalunkon új jelszót igényeltél.
       
       Az új jelszavad: ${password} 
       
 Ha szeretnéd, a bejelentkezés után megváltoztathatod az új jelszavad a profil adataidnál.`,
-    };
+      };
 
-    transporter.sendMail(mailOptions, function (error, info) {
-      if (error) {
-        console.log(error);
-      } else {
-        console.log("Email sent: " + info.response);
-      }
-    });
+      transporter.sendMail(mailOptions, function (error, info) {
+        if (error) {
+          console.log(error);
+        } else {
+          console.log("Email sent: " + info.response);
+        }
+      });
 
-    return res
-      .status(200)
-      .json({ msg: "Az új jelszó elküldve a megadott email címedre!" });
+      return res
+        .status(200)
+        .json({ msg: "Az új jelszó elküldve a megadott email címedre!" });
+    
   } catch (error) {
     console.log(error);
   }
@@ -228,17 +219,15 @@ const checkToken = async (req, res, next) => {
   try {
     decodedId = jwt.verify(req.session.jwt, process.env.TOKEN_KEY);
   } catch (err) {
-    return res.status(402).send({ SessionmMsg: "Nincs jogosultságod! Kérlek, jelentkezz be!" });
+    return res
+      .status(402)
+      .send({ SessionmMsg: "Nincs jogosultságod! Kérlek, jelentkezz be!" });
   }
 
-  const user = await User.findOne({
-    attributes: ["uuid", "name", "email", "telephone"],
-    where: {
-      uuid: decodedId.user_id,
-    },
-  });
+  const user = await User.findOne({ _id: decodedId.user_id }, ["-password"]);
 
-  if (!user) return res.status(404).json({ SessionMsg: "A felhasználó nem található" });
+  if (!user)
+    return res.status(404).json({ SessionMsg: "A felhasználó nem található" });
   res.status(200).json({ user });
 };
 
@@ -251,7 +240,7 @@ const logout = async (req, res, next) => {
 
 const getAllUsers = async (req, res) => {
   try {
-    let users = await User.findAll({});
+    let users = await User.find({}, ["-password"]);
     res.send(users);
   } catch (err) {
     console.log(err);
@@ -261,7 +250,7 @@ const getAllUsers = async (req, res) => {
 const getOneUserById = async (res, req) => {
   try {
     let id = req.params.id;
-    let user = await User.findOne({ where: { id: id } });
+    let user = await User.findOne({ id: id });
     res.status(200).send(user);
   } catch (err) {
     console.log(err);
@@ -270,32 +259,31 @@ const getOneUserById = async (res, req) => {
 
 const updateUser = async (req, res, next) => {
   try {
-    const user = await User.findOne({
-      where: { uuid: req.params.uuid },
-    });
+    const user = await User.findById(req.params.uuid);
 
     if (!user)
       return res.status(404).json({ msg: "A felhasznaló nem található" });
 
-    const updatedUser = {
-      name: req.body.name ?? user.name,
-      password: user.password,
-      telephone: req.body.telephone ?? user.telephone,
-    };
+    if (user._id.equals(req.userId)) {
+      user.name = req.body.name ?? user.name;
+      user.telephone = req.body.telephone ?? user.telephone;
 
-    if (req.body.newpassword) {
-      if (await bcrypt.compare(req.body.oldpassword, user.password)) {
-        const encryptedPassword = await bcrypt.hash(req.body.newpassword, 10);
-        updatedUser.password = encryptedPassword;
-      } else {
-        return res
-          .status(404)
-          .json({ msg: "A régi jelszó nem jól lett megadva!" });
+      if (req.body.newpassword) {
+        if (await bcrypt.compare(req.body.oldpassword, user.password)) {
+          const encryptedPassword = await bcrypt.hash(req.body.newpassword, 10);
+          user.password = encryptedPassword;
+        } else {
+          return res
+            .status(404)
+            .json({ msg: "A régi jelszó nem jól lett megadva!" });
+        }
       }
+
+      await user.save();
+      return res.status(200).json({ msg: "Sikeresen módosítva!" });
     }
 
-    await User.update(updatedUser, { where: { id: user.id } });
-    return res.status(200).json({ msg: "Sikeresen módosítva!" });
+    return res.status(400).json({ msg: "Nincs jogosultsagod" }); 
   } catch (err) {
     return res.status(400).json({ msg: "Oops..Valami hiba történt." });
   }
@@ -303,17 +291,13 @@ const updateUser = async (req, res, next) => {
 
 const deleteUser = async (req, res, next) => {
   try {
-    const user = await User.findOne({
-      where: { uuid: req.params.uuid },
+    const user = await User.findById(req.params.uuid);
+
+    await Product.remove({
+      user: user._id,
     });
 
-    await Product.destroy({
-      where: {
-        userId: user.id,
-      },
-    });
-    
-    await User.destroy({ where: { id: user.id } });
+    await user.remove();
     res.status(200).send({ msg: "A profil törölve!" });
   } catch (err) {
     console.log(err);
