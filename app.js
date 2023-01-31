@@ -14,7 +14,7 @@ dotenv.config();
 
 mongoose.set('strictQuery', true);
 mongoose.connect(
-  "mongodb+srv://mouse:davee22dodo@cluster0.fkwvjht.mongodb.net/mern?retryWrites=true&w=majority", {useNewUrlParser: true}
+  process.env.MONGO_URL, {useNewUrlParser: true}
 );
 
 const connection = mongoose.connection;
@@ -30,7 +30,7 @@ try {
 
 let store = new MongoStore({
   mongoUrl:
-    "mongodb+srv://mouse:davee22dodo@cluster0.fkwvjht.mongodb.net/mern?retryWrites=true&w=majority",
+  process.env.MONGO_URL,
   collection: "sessions",
 });
 
