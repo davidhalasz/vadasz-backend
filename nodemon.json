@@ -11,7 +11,7 @@
       "acquire": 30000,
       "idle": 10000
     },
-    "NODE_ENV": "development",
+    "NODE_ENV": "production",
     "PORT": 4000,
     "TOKEN_KEY": "randomTokenKey",
     "REFRESH_TOKEN": "refreshtokenkey",
