@@ -13,7 +13,7 @@ const MongoStore = require("connect-mongo");
 dotenv.config();
 
 mongoose.set("strictQuery", true);
-mongoose.connect(process.env.MONGO_URL, {
+mongoose.connect(env.MONGO_URL, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
@@ -40,7 +40,7 @@ app.use(
     saveUninitialized: true,
     store: store,
     cookie: {
-      secure: "false",
+      secure: "auto",
     },
   })
 );
