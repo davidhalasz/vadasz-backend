@@ -46,10 +46,7 @@ app.use(
 );
 
 app.use(
-  cors({
-    credentials: true,
-    origin: "http://193.201.185.135",
-  })
+  cors()
 );
 app.use("/uploads", express.static(path.join("uploads")));
 app.use(express.json());
