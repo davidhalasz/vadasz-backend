@@ -12,16 +12,16 @@ const MongoStore = require("connect-mongo");
 
 dotenv.config();
 
-mongoose.set('strictQuery', true);
-mongoose.connect(
-  process.env.MONGO_URL, {useNewUrlParser: true}
-);
+mongoose.set("strictQuery", true);
+mongoose.connect(process.env.MONGO_URL, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
 
 const connection = mongoose.connection;
 
 try {
-  connection
-  .once("open", () => {
+  connection.once("open", () => {
     console.log("database connected successfully...");
   });
 } catch (error) {
