@@ -29,7 +29,7 @@ try {
 }
 
 let store = new MongoStore({
-  mongoUrl:"mongodb+srv://mouse:davee22dodo@cluster0.fkwvjht.mongodb.net/mern?retryWrites=true&w=majority",
+  mongoUrl: `mongodb+srv://mouse:davee22dodo@cluster0.fkwvjht.mongodb.net/mern?retryWrites=true&w=majority`,
   collection: "sessions",
 });
 
