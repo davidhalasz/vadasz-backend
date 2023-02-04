@@ -47,7 +47,6 @@ const createProduct = async (req, res, next) => {
     await newProduct.save();
     res.status(201).json({ msg: "Termék sikeresen hozzáadva!" });
   } catch (error) {
-    console.log(error);
     res
       .status(500)
       .json({ msg: "Oops...valami hiba történt! Kérlek, próbáld meg később!" });
