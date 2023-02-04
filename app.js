@@ -46,7 +46,7 @@ app.use(
 );
 
 app.use(
-  cors()
+  cors({origin: '*'})
 );
 app.use("/uploads", express.static(path.join("uploads")));
 app.use(express.json());
