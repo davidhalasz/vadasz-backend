@@ -59,6 +59,19 @@ app.use("/api/user", userRouter);
 app.use("/api", productRouter);
 const PORT = process.env.PORT || 4000;
 
+if(process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '../vadasz-frontend/build')));
+
+  app.get('*', (req, res) => {
+    res.sendFile(
+      path.resolve(__dirname, '../', 'vadasz-frontend', 'build', 'index.html')
+    )
+  }
+  );
+} else {
+  app.get('/', (req, res) => res.send('Please set to production'));
+}
+
 app.use((error, req, res, next) => {
   if (req.file) {
     fs.unlink(req.file.path, (err) => {
