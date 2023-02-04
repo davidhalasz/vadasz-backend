@@ -12,6 +12,31 @@ const MongoStore = require("connect-mongo");
 
 dotenv.config();
 
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use("/uploads", express.static(path.join("uploads")));
+
+app.use(
+  cors({origin: '*'})
+);
+
+app.use("/api/user", userRouter);
+app.use("/api", productRouter);
+const PORT = process.env.PORT || 4000;
+
+if(process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '../vadasz-frontend/build')));
+
+  app.get('*', (req, res) => {
+    res.sendFile(
+      path.resolve(__dirname, '../', 'vadasz-frontend', 'build', 'index.html')
+    )
+  }
+  );
+} else {
+  app.get('/', (req, res) => res.send('Please set to production'));
+}
+
 mongoose.set("strictQuery", true);
 mongoose.connect(process.env.MONGO_URL, {
   useNewUrlParser: true,
@@ -45,29 +70,6 @@ app.use(
   })
 );
 
-app.use(
-  cors({origin: '*'})
-);
-app.use("/uploads", express.static(path.join("uploads")));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-app.use("/api/user", userRouter);
-app.use("/api", productRouter);
-const PORT = process.env.PORT || 4000;
-
-if(process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../vadasz-frontend/build')));
-
-  app.get('*', (req, res) => {
-    res.sendFile(
-      path.resolve(__dirname, '../', 'vadasz-frontend', 'build', 'index.html')
-    )
-  }
-  );
-} else {
-  app.get('/', (req, res) => res.send('Please set to production'));
-}
 
 app.use((error, req, res, next) => {
   if (req.file) {
