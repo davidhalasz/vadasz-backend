@@ -4,9 +4,7 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "start": "pm2 start ecosystem.config.js",
-    "stopall": "pm2 stop all",
-    "status": "pm2 log 1",
+    "start": "node app.js",
     "dev": "nodemon app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -16,7 +14,6 @@
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.1",
     "connect-mongo": "^4.6.0",
-    "connect-mongodb-session": "^3.1.1",
     "connect-session-sequelize": "^7.1.5",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
@@ -30,7 +27,6 @@
     "multer": "^1.4.5-lts.1",
     "mysql2": "^2.3.3",
     "nodemailer": "^6.8.0",
-    "pm2": "^5.2.2",
     "sequelize": "^6.27.0",
     "uuid": "^9.0.0"
   },
