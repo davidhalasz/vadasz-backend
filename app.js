@@ -29,17 +29,19 @@ try {
 }
 
 let store = new MongoStore({
-  mongoUrl: `mongodb+srv://mouse:davee22dodo@cluster0.fkwvjht.mongodb.net/mern?retryWrites=true&w=majority`,
+  mongoUrl: process.env.MONGO_URL,
   collection: "sessions",
 });
 
 app.use(
   session({
-    secret: 'sessionsecret',
+    secret: process.env.SESS_SECREET,
     resave: false,
     saveUninitialized: true,
     store: store,
-    cookie: { maxAge: 1000 * 60 * 60 * 24 },
+    cookie: {
+      secure: "false",
+    },
   })
 );
 
