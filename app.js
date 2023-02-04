@@ -29,8 +29,7 @@ try {
 }
 
 let store = new MongoStore({
-  mongoUrl:
-  process.env.MONGO_URL,
+  mongoUrl: process.env.MONGO_URL,
   collection: "sessions",
 });
 
