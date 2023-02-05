@@ -9,6 +9,7 @@ module.exports = {
       env_development: {
         NODE_ENV: "development",
       },
+      exec_mode: "cluster"
     },
   ],
 };
