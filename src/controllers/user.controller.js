@@ -2,7 +2,6 @@ const bcrypt = require("bcryptjs");
 const HttpError = require("../http-errors");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
-
 const User = require("../models/user");
 const Product = require("../models/product");
 const { default: mongoose } = require("mongoose");

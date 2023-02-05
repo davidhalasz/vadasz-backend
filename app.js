@@ -9,6 +9,7 @@ const fs = require("fs");
 const path = require("path");
 const mongoose = require("mongoose");
 const MongoStore = require("connect-mongo");
+const cookieParser = require('cookie-parser');
 
 dotenv.config({debug: true, path: __dirname + '/.env'});
 
@@ -52,7 +53,7 @@ app.use(
     origin: "http://193.201.185.135",
   })
 );
-
+app.use(cookieParser());
 app.use("/uploads", express.static(path.join("uploads")));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
