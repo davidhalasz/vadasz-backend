@@ -11,36 +11,6 @@ const mongoose = require("mongoose");
 const MongoStore = require("connect-mongo");
 
 dotenv.config({debug: true, path: __dirname + '/.env'});
-console.log(__dirname);
-console.log(process.env.NODE_ENV);
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use("/uploads", express.static(path.join("uploads")));
-
-app.use(
-  cors({
-    credentials: true,
-    origin: "http://193.201.185.135",
-  })
-);
-
-app.use("/api/user", userRouter);
-app.use("/api", productRouter);
-const PORT = process.env.PORT || 5000;
-
-if(process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../vadasz-frontend/build')));
-
-  app.get('*', (req, res) => {
-    res.sendFile(
-      path.resolve(__dirname, '../', 'vadasz-frontend', 'build', 'index.html')
-    )
-  }
-  );
-} else {
-  app.get('/', (req, res) => res.send('Please set to production'));
-}
 
 mongoose.set("strictQuery", true);
 mongoose.connect(process.env.MONGO_URL, {
@@ -57,6 +27,7 @@ try {
 } catch (error) {
   console.log("connection failed...");
 }
+
 
 let store = new MongoStore({
   mongoUrl: process.env.MONGO_URL,
@@ -75,6 +46,33 @@ app.use(
   })
 );
 
+app.use(
+  cors({
+    credentials: true,
+    origin: "http://193.201.185.135",
+  })
+);
+
+app.use("/uploads", express.static(path.join("uploads")));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+app.use("/api/user", userRouter);
+app.use("/api", productRouter);
+const PORT = process.env.PORT || 5000;
+
+if(process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '../vadasz-frontend/build')));
+
+  app.get('*', (req, res) => {
+    res.sendFile(
+      path.resolve(__dirname, '../', 'vadasz-frontend', 'build', 'index.html')
+    )
+  }
+  );
+} else {
+  app.get('/', (req, res) => res.send('Please set to production'));
+}
 
 app.use((error, req, res, next) => {
   if (req.file) {
