@@ -19,12 +19,15 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/uploads", express.static(path.join("uploads")));
 
 app.use(
-  cors({origin: '*'})
+  cors({
+    credentials: true,
+    origin: "http://193.201.185.135",
+  })
 );
 
 app.use("/api/user", userRouter);
 app.use("/api", productRouter);
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 5000;
 
 if(process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../vadasz-frontend/build')));
