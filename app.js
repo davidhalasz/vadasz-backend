@@ -10,7 +10,7 @@ const path = require("path");
 const mongoose = require("mongoose");
 const MongoStore = require("connect-mongo");
 
-dotenv.config();
+dotenv.config({debug: true});
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
