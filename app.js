@@ -11,6 +11,7 @@ const mongoose = require("mongoose");
 const MongoStore = require("connect-mongo");
 
 dotenv.config({debug: true, path: __dirname + '/.env'});
+console.log(__dirname);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
