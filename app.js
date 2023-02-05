@@ -12,6 +12,7 @@ const MongoStore = require("connect-mongo");
 
 dotenv.config({debug: true, path: __dirname + '/.env'});
 console.log(__dirname);
+console.log(process.env.NODE_ENV);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
