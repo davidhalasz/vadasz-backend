@@ -76,8 +76,7 @@ app.use((err, req, res, next) => {
 });
 
 if(process.env.NODE_ENV === 'production') {
-  console.log(__dirname);
-  app.use(express.static(path.join(__dirname, '../vadasz-frontend/build')));
+  app.use(express.static("vadasz-frontend/build"));
 
   app.get('*', (req, res) => {
     res.sendFile(
