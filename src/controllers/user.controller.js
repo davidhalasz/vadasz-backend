@@ -62,7 +62,7 @@ const createUser = async (req, res, next) => {
       subject: "Regisztráció megerősítése",
       text: `Ezt az email azért küldjük, mert regisztráltál a Vadászbörze oldalunkra. 
 
-A regisztráció megerősítéséhez, kattints az alábbi linkre: ${process.env.BASE_URL}${response._id.toString()}`,
+A regisztráció megerősítéséhez, kattints az alábbi linkre: ${process.env.BASE_URL}activation/${response._id.toString()}`,
     };
 
     transporter.sendMail(mailOptions, function (error, info) {
@@ -94,7 +94,7 @@ const resendEmail = async (req, res, next) => {
       from: process.env.EMAIL_TEST,
       to: user.email,
       subject: "Regisztráció megerősítése",
-      text: `Ezt az email azért küldjük, mert regisztráltál a Vadászbörze oldalunkra. A regisztráció megerősítéséhez, kattints az alábbi linkre: ${process.env.BASE_URL}${user._id.toString()}`,
+      text: `Ezt az email azért küldjük, mert regisztráltál a Vadászbörze oldalunkra. A regisztráció megerősítéséhez, kattints az alábbi linkre: ${process.env.BASE_URL}activation/${user._id.toString()}`,
     };
 
     transporter.sendMail(mailOptions, function (error, info) {
