@@ -9,7 +9,8 @@ module.exports = {
       env_development: {
         NODE_ENV: "development",
       },
-      exec_mode: "cluster"
+      exec_mode: "cluster",
+      ignore_watch: ['uploads']
     },
   ],
 };
