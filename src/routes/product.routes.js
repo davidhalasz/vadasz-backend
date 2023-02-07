@@ -17,7 +17,7 @@ const validateRequest = (req, res, next) => {
 router.get('/products', productController.getProducts);
 router.get('/my-products', verifyToken, productController.getProductsByUserId);
 router.post('/product', verifyToken, fileUpload.array('files'), productValidator, validateRequest, productController.createProduct);
-router.patch('/product/:id', productValidator, validateRequest, verifyToken, fileUpload.array('files'), productController.updateProduct);
+router.patch('/product/:id', verifyToken, fileUpload.array('files'), productValidator, validateRequest,  productController.updateProduct);
 router.delete('/product/:id', verifyToken, productController.deleteProductById);
 router.get('/product/:id', productController.getProductById);
 
