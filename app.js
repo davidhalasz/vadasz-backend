@@ -55,6 +55,7 @@ app.use(
 );
 app.use(cookieParser());
 app.use("/uploads", express.static(path.join("uploads")));
+app.use(express.static(__dirname, "../vadasz-frontend/build"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -62,25 +63,10 @@ app.use("/api/user", userRouter);
 app.use("/api", productRouter);
 const PORT = process.env.PORT || 5000;
 
-app.use((req, res, next) => {
-  const err = new Error('Not Found');
-  err.status = 404;
-  next(err);
-});
-
-app.use((err, req, res, next) => {
-  res.locals.error = err;
-  const status = err.status || 500;
-  res.status(status);
-  res.render('error');
-});
-
 if(process.env.NODE_ENV === 'production') {
-  app.use(express.static("vadasz-frontend/build"));
-
   app.get('*', (req, res) => {
     res.sendFile(
-      path.join(__dirname, '../vadasz-frontend/build/index.html')
+      path.resolve(__dirname, '../', 'vadasz-frontend', 'build', 'index.html')
     )
   }
   );
