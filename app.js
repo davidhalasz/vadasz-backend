@@ -62,6 +62,19 @@ app.use("/api/user", userRouter);
 app.use("/api", productRouter);
 const PORT = process.env.PORT || 5000;
 
+app.use((req, res, next) => {
+  const err = new Error('Not Found');
+  err.status = 404;
+  next(err);
+});
+
+app.use((err, req, res, next) => {
+  res.locals.error = err;
+  const status = err.status || 500;
+  res.status(status);
+  res.render('error');
+});
+
 if(process.env.NODE_ENV === 'production') {
   console.log(__dirname);
   app.use(express.static(path.join(__dirname, '../vadasz-frontend/build')));
