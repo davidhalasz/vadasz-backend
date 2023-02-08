@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunkfrontend=self.webpackChunkfrontend||[]).push([[256],{3256:function(e,t,n){n.r(t);var s=n(2791),l=n(184);t.default=function(){return(0,l.jsxs)(s.Fragment,{children:[(0,l.jsx)("div",{className:"w-full text-center p-4 text-customBlue font-bold text-2xl",children:(0,l.jsx)("h1",{children:"Profiladatok"})}),(0,l.jsx)("div",{className:"mx-auto w-10/12"})]})}}}]);
+//# sourceMappingURL=256.df9727ff.chunk.js.map
