@@ -64,7 +64,7 @@ const PORT = process.env.PORT || 5000;
 
 if(process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../vadasz-frontend/build')));
-  console.log(path.resolve(__dirname, '../vadasz-frontend/build', 'index.html'));
+  console.log(path.join(__dirname, '../vadasz-frontend/build'));
   app.get('/*', (req, res) => {
     res.sendFile(
       path.resolve(__dirname, '../vadasz-frontend/build', 'index.html')
